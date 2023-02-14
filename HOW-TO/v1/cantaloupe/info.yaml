@@ -1,4 +1,0 @@
----
-fallback: http://localhost/islandora/object/%{pid}/datastream/%{dsid}/view?token=%{token}
-sitemap:
-    ${FQDN}_d8_default: 'http://${FQDN}%{suffix}'

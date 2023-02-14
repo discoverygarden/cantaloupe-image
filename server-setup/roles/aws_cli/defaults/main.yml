@@ -1,5 +1,0 @@
----
-aws_bin_dir: /usr/bin
-aws_install_dir: /usr/local/aws-cli
-staging_dir: /tmp/staging
-aws_cli_download: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip

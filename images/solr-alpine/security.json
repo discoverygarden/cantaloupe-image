@@ -1,6 +1,0 @@
-{
-"authentication":{
-  "blockUnknown":true,
-  "class":"solr.BasicAuthPlugin",
-  "credentials":{"drupal":"5Ngpwekaz9u30qeeBJ9Il2GUB6PhFlOc7FUXGPfnQJo= ihPjcm1YU6Znndl/76iOaAq4mYVd2Od5ouilbRCEWgg="}
-}}

@@ -1,8 +1,0 @@
-monolog:
-  handlers:
-    docker-log:
-      type: stream
-      path: "php://stderr"
-      level: DEBUG
-      channels: ["!event", "!console"]
-

@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-{{ microk8s_path }} kubectl delete secret regcred 
-
-{{ microk8s_path }} kubectl create secret docker-registry regcred \
-    --docker-server={{ registry.name }} \
-    --docker-username=AWS \
-    --docker-password="$(aws ecr get-login-password)"

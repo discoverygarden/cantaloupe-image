@@ -1,3 +1,0 @@
----
-aws_iam_user: ctda-dev1-lib.grove.ad.uconn.edu-microk8s
-secrets_encryption_key: "{{ lookup('amazon.aws.aws_secret', 'stage/ctda/ctda-dev1-lib.grove.ad.uconn.edu') }}"

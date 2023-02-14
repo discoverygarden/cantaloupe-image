@@ -1,7 +1,0 @@
-[
-  "${INGRESS_HOST}",
-  "drupal",
-  "${FQDN}",
-  "${DRUPAL_IP}",
-  "localhost"
-]

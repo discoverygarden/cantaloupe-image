@@ -1,6 +1,0 @@
----
-- include_tasks: setup-RedHat.yml
-- include_tasks: users.yml
-- include_tasks: encryption.yml
-- include_tasks: registries.yml
-- include_tasks: configure.yml

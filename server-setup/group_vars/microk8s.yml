@@ -1,5 +1,0 @@
----
-registries:
-  - name: 231224489621.dkr.ecr.us-east-1.amazonaws.com
-    uri: https://231224489621.dkr.ecr.us-east-1.amazonaws.com
-    type: ecr

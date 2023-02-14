@@ -1,3 +1,0 @@
-<config version='1' header="X-Islandora-Roles">
-  <site algorithm='RS256' encoding='PEM' path="/run/secrets/crayfish.pub" default="true"/>
-</config>

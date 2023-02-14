@@ -1,3 +1,0 @@
----
-aws_iam_user: sreekar-redhat-2.dev.dgi-microk8s
-secrets_encryption_key: "{{ lookup('amazon.aws.aws_secret', 'dev/alexander/sreekar-redhat-2.dev.dgi') }}"
