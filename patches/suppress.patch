@@ -1,5 +1,5 @@
 diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
-index e188661fb..8c08f6a01 100644
+index e188661fb..d30828518 100644
 --- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
 +++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
 @@ -1,15 +1,17 @@
@@ -26,7 +26,7 @@ index e188661fb..8c08f6a01 100644
  
  /**
   * <p>Reads various information from a JPEG2000 box structure. Only used for
-@@ -301,8 +303,20 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
+@@ -301,8 +303,19 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
          if (Arrays.equals(uuid, XMP_UUID)) {
              byte[] data = read((int) dataLength - 16);
              xmp = new String(data, StandardCharsets.UTF_8);
@@ -36,15 +36,31 @@ index e188661fb..8c08f6a01 100644
                      xmp.indexOf("</rdf:RDF>") + 10);
 +            }
 +            catch (StringIndexOutOfBoundsException e) {
-+              LOGGER.warn(
-+                  "Index OOB exception when reading XMP (message: %s) (RDF start with space: %d) (RDF start without space: %d) (RDF end: %d)",
-+                  e.getMessage(),
++              LOGGER.warn(String.format(
++                  "Index OOB exception when reading XMP (RDF start with space: %d) (RDF start without space: %d) (RDF end: %d)",
 +                  xmp.indexOf("<rdf:RDF "),
 +                  xmp.indexOf("<rdf:RDF"),
 +                  xmp.indexOf("</rdf:RDF>")
-+              );
-+              xmp = "";
++              ));
++              xmp = "<rdf:RDF><rdf:Description rdf:about=\"\"></rdf:Description></rdf:RDF>";
 +            }
          } else {
              inputStream.skipBytes(dataLength - 16);
          }
+@@ -410,8 +423,14 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
+         byte[] data = new byte[length];
+         int n, offset = 0;
+         while ((n = inputStream.read(
+-                data, offset, data.length - offset)) < offset) {
+-            offset += n;
++                data, offset, data.length - offset)) > -1) {
++           offset += n;
++           if (offset == length) {
++             break;
++           }
++        }
++        if (offset < length) {
++          throw new IOException("Failed to read the expected amount of data.");
+         }
+         return data;
+     }
