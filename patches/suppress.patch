@@ -1,0 +1,50 @@
+diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
+index e188661fb..8c08f6a01 100644
+--- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
++++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
+@@ -1,15 +1,17 @@
+ package edu.illinois.library.cantaloupe.processor.codec;
+ 
+-import edu.illinois.library.cantaloupe.util.Stopwatch;
++import java.io.IOException;
++import java.nio.charset.StandardCharsets;
++import java.util.Arrays;
++
++import javax.imageio.stream.ImageInputStream;
++import javax.xml.bind.DatatypeConverter;
++
+ import org.apache.commons.io.IOUtils;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+-import javax.imageio.stream.ImageInputStream;
+-import javax.xml.bind.DatatypeConverter;
+-import java.io.IOException;
+-import java.nio.charset.StandardCharsets;
+-import java.util.Arrays;
++import edu.illinois.library.cantaloupe.util.Stopwatch;
+ 
+ /**
+  * <p>Reads various information from a JPEG2000 box structure. Only used for
+@@ -301,8 +303,20 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
+         if (Arrays.equals(uuid, XMP_UUID)) {
+             byte[] data = read((int) dataLength - 16);
+             xmp = new String(data, StandardCharsets.UTF_8);
+-            xmp = xmp.substring(xmp.indexOf("<rdf:RDF "),
++            try {
++              xmp = xmp.substring(xmp.indexOf("<rdf:RDF "),
+                     xmp.indexOf("</rdf:RDF>") + 10);
++            }
++            catch (StringIndexOutOfBoundsException e) {
++              LOGGER.warn(
++                  "Index OOB exception when reading XMP (message: %s) (RDF start with space: %d) (RDF start without space: %d) (RDF end: %d)",
++                  e.getMessage(),
++                  xmp.indexOf("<rdf:RDF "),
++                  xmp.indexOf("<rdf:RDF"),
++                  xmp.indexOf("</rdf:RDF>")
++              );
++              xmp = "";
++            }
+         } else {
+             inputStream.skipBytes(dataLength - 16);
+         }
