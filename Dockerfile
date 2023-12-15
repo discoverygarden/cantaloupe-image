@@ -94,8 +94,11 @@ RUN \
   --mount=type=cache,target=/root/.gem/specs,sharing=locked \
   gem install --no-document --install-dir $GEM_PATH cache_lib
 
+FROM $BASE_IMAGE as base
+
 FROM $BASE_IMAGE
 
+ARG BASE_IMAGE
 ARG TARGETARCH
 ARG LIBJPEGTURBO_VERSION
 ENV LIBJPEGTURBO_VERSION=$LIBJPEGTURBO_VERSION
@@ -139,11 +142,14 @@ RUN addgroup --system tomcat --gid $TOMCAT_GID \
 # Copy ImageMagick policy
 COPY --link imagemagick_policy.xml /etc/ImageMagick-7/policy.xml
 
+USER tomcat
+
 # Get and unpack Cantaloupe release archive
+COPY --link --chown=tomcat:tomcat --from=base /usr/local/tomcat/ /usr/local/tomcat/
 COPY --link --chown=tomcat:tomcat --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.war /usr/local/tomcat/webapps/cantaloupe.war
-RUN mkdir -p /var/cache/cantaloupe /var/log/cantaloupe \
-  && chown -R tomcat:tomcat /var/cache/cantaloupe /var/log/cantaloupe \
-  && chown -R tomcat:tomcat /usr/local/tomcat/
+WORKDIR /var/cache/cantaloupe
+WORKDIR /var/log/cantaloupe
+
 
 # Cantaloupe configs
 COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=delegate-gem-acquisition ${GEM_PATH}/ ${GEM_PATH}/
@@ -151,7 +157,6 @@ COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID \
   actual_cantaloupe.properties cantaloupe.properties delegates.rb default_i8_delegates.rb info.yaml \
   ${CANTALOUPE_CONFIGS}/
 
-USER tomcat
 
 WORKDIR /usr/local/tomcat
 CMD ["catalina.sh", "run"]
