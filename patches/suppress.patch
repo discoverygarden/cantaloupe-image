@@ -1,5 +1,5 @@
 diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
-index e188661fb..d30828518 100644
+index e188661fb..2ee7f7ab9 100644
 --- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
 +++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/JPEG2000MetadataReader.java
 @@ -1,15 +1,17 @@
@@ -26,28 +26,7 @@ index e188661fb..d30828518 100644
  
  /**
   * <p>Reads various information from a JPEG2000 box structure. Only used for
-@@ -301,8 +303,19 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
-         if (Arrays.equals(uuid, XMP_UUID)) {
-             byte[] data = read((int) dataLength - 16);
-             xmp = new String(data, StandardCharsets.UTF_8);
--            xmp = xmp.substring(xmp.indexOf("<rdf:RDF "),
-+            try {
-+              xmp = xmp.substring(xmp.indexOf("<rdf:RDF "),
-                     xmp.indexOf("</rdf:RDF>") + 10);
-+            }
-+            catch (StringIndexOutOfBoundsException e) {
-+              LOGGER.warn(String.format(
-+                  "Index OOB exception when reading XMP (RDF start with space: %d) (RDF start without space: %d) (RDF end: %d)",
-+                  xmp.indexOf("<rdf:RDF "),
-+                  xmp.indexOf("<rdf:RDF"),
-+                  xmp.indexOf("</rdf:RDF>")
-+              ));
-+              xmp = "<rdf:RDF><rdf:Description rdf:about=\"\"></rdf:Description></rdf:RDF>";
-+            }
-         } else {
-             inputStream.skipBytes(dataLength - 16);
-         }
-@@ -410,8 +423,14 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
+@@ -410,8 +412,17 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
          byte[] data = new byte[length];
          int n, offset = 0;
          while ((n = inputStream.read(
@@ -57,6 +36,9 @@ index e188661fb..d30828518 100644
 +           offset += n;
 +           if (offset == length) {
 +             break;
++           }
++           else if (offset > length) {
++             throw new IndexOutOfBoundsException("Offset larger than length.");
 +           }
 +        }
 +        if (offset < length) {
