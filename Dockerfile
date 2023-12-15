@@ -140,7 +140,7 @@ RUN addgroup --system tomcat --gid $TOMCAT_GID \
 COPY --link imagemagick_policy.xml /etc/ImageMagick-7/policy.xml
 
 # Get and unpack Cantaloupe release archive
-COPY --link --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.war /usr/local/tomcat/webapps/cantaloupe.war
+COPY --link --chown=tomcat:tomcat --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.war /usr/local/tomcat/webapps/cantaloupe.war
 RUN mkdir -p /var/cache/cantaloupe /var/log/cantaloupe \
   && chown -R tomcat:tomcat /var/cache/cantaloupe /var/log/cantaloupe \
   && chown -R tomcat:tomcat /usr/local/tomcat/
