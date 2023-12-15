@@ -97,8 +97,17 @@ RUN \
   --mount=type=cache,target=/root/.gem/specs,sharing=locked \
   gem install --no-document --install-dir $GEM_PATH cache_lib
 
+# --------------------------------------
+# Reference to the base image as a build stage.
+#
+# Odd situation of wanting to chown a directory that's provided by the base
+# image, without a `RUN chown [...]` invocation.
+# --------------------------------------
 FROM $BASE_IMAGE as base
 
+# --------------------------------------
+# Main image build.
+# --------------------------------------
 FROM $BASE_IMAGE
 
 ARG TARGETARCH
