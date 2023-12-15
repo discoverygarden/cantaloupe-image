@@ -7,12 +7,17 @@ ARG TOMCAT_GID=101
 
 FROM maven:3-eclipse-temurin-8-focal as cantaloupe-build
 
+ARG TARGETPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+
 ARG CANTALOUPE_REMOTE
 ARG CANTALOUPE_BRANCH
 
 RUN \
-  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists \
-  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives \
+  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
+  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
   apt-get update -qqy && apt-get install -qqy --no-install-recommends \
   git
 
@@ -29,6 +34,11 @@ RUN --mount=type=cache,target=/root/.m2 \
  mvn clean package -DskipTests
 
 FROM tomcat:9.0.69-jdk8-temurin-focal
+
+ARG TARGETPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 ARG CANTALOUPE_VERSION
 ENV LIBJPEGTURBO_VERSION=2.0.2
@@ -48,16 +58,16 @@ EXPOSE 8080
 
 # Update packages and install tools
 RUN \
-  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists \
-  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives \
+  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
+  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
   apt-get update -qqy && apt-get install -qqy --no-install-recommends \
   ffmpeg libopenjp2-tools imagemagick curl rubygems unzip
 
 # NOTE: can leave out this piece if you don't need the TurboJpegProcessor
 # https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
 RUN \
-  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists \
-  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives \
+  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
+  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
   cd /tmp && apt-get install -qy cmake g++ make nasm \
   && curl --silent --fail -OL https://downloads.sourceforge.net/project/libjpeg-turbo/${LIBJPEGTURBO_VERSION}/libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz \
   && tar -xpf libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz \
