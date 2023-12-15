@@ -2,6 +2,9 @@ ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
 ARG CANTALOUPE_BRANCH=release/4.1
 ARG CANTALOUPE_VERSION=4.1.11
 
+ARG TOMCAT_UID=101
+ARG TOMCAT_GID=101
+
 FROM maven:3-eclipse-temurin-8-focal as cantaloupe-build
 
 ARG CANTALOUPE_REMOTE
@@ -38,6 +41,8 @@ ENV CATALINA_HOME=/usr/local/tomcat
 ENV CATALINA_PID=/usr/local/tomcat/pid/catalina.pid
 ENV TOMCAT_MEM=1g
 ENV JAVA_OPTS="-Xms${TOMCAT_MEM} -Xmx${TOMCAT_MEM} -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES}"
+ARG TOMCAT_UID
+ARG TOMCAT_GID
 
 EXPOSE 8080
 
@@ -73,8 +78,8 @@ RUN \
   && apt-get -qqy autoremove
 
 # Run non privileged
-RUN addgroup --system tomcat \
-  && adduser --system tomcat --ingroup tomcat
+RUN addgroup --system tomcat --gid $TOMCAT_GID \
+  && adduser --system tomcat --ingroup tomcat --uid $TOMCAT_UID
 
 # Copy ImageMagick policy
 COPY --link imagemagick_policy.xml /etc/ImageMagick-7/policy.xml
@@ -91,7 +96,7 @@ RUN mkdir -p ${CANTALOUPE_CONFIGS} \
   && gem install --no-document --install-dir ${GEM_PATH} cache_lib \
   && chown -R tomcat:tomcat ${CANTALOUPE_CONFIGS}
 
-COPY --link --chown=tomcat:tomcat \
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID \
   actual_cantaloupe.properties cantaloupe.properties delegates.rb default_i8_delegates.rb info.yaml \
   ${CANTALOUPE_CONFIGS}/
 
