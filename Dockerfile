@@ -145,8 +145,8 @@ COPY --link imagemagick_policy.xml /etc/ImageMagick-7/policy.xml
 USER tomcat
 
 # Get and unpack Cantaloupe release archive
-COPY --link --chown=tomcat:tomcat --from=base /usr/local/tomcat/ /usr/local/tomcat/
-COPY --link --chown=tomcat:tomcat --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.war /usr/local/tomcat/webapps/cantaloupe.war
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=base /usr/local/tomcat/ /usr/local/tomcat/
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.war /usr/local/tomcat/webapps/cantaloupe.war
 WORKDIR /var/cache/cantaloupe
 WORKDIR /var/log/cantaloupe
 
