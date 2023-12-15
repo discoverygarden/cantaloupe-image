@@ -7,8 +7,6 @@ ARG TOMCAT_GID=101
 
 FROM maven:3-eclipse-temurin-8-focal as cantaloupe-build
 
-ARG TARGETPLATFORM
-ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 
@@ -35,8 +33,6 @@ RUN --mount=type=cache,target=/root/.m2 \
 
 FROM tomcat:9.0.69-jdk8-temurin-focal
 
-ARG TARGETPLATFORM
-ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 
