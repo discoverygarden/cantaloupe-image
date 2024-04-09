@@ -4,7 +4,7 @@ ARG CANTALOUPE_VERSION=4.1.11
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
 ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 
-ARG BASE_IMAGE=tomcat:9.0.69-jdk8-temurin-focal
+ARG BASE_IMAGE=tomcat:9.0.87-jdk8-temurin-focal
 
 ARG LIBJPEGTURBO_VERSION=2.0.2
 
