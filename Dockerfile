@@ -165,9 +165,8 @@ WORKDIR /var/log/cantaloupe
 
 # Cantaloupe configs
 COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=delegate-gem-acquisition ${GEM_PATH}/ ${GEM_PATH}/
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID \
-  actual_cantaloupe.properties cantaloupe.properties delegates.rb default_i8_delegates.rb info.yaml \
-  ${CANTALOUPE_CONFIGS}/
+ADD --link --chown=$TOMCAT_UID:$TOMCAT_GID https://github.com/discoverygarden/cantaloupe_configs.git#main ${CANTALOUPE_CONFIGS}/
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID actual_cantaloupe.properties info.yaml ${CANTALOUPE_CONFIGS}/
 
 
 WORKDIR /usr/local/tomcat
