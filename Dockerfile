@@ -1,7 +1,7 @@
-#ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
-#ARG CANTALOUPE_BRANCH=release/4.1
+ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
+ARG CANTALOUPE_BRANCH=release/5.0
 ARG CANTALOUPE_VERSION=5.0.6
-ARG CANTALOUPE_FILE_HASH=sha256:35311eb0d4d6f0578cab42fd5e51d6150e62821cb3b4ee3a265e2befbeeb5897
+#ARG CANTALOUPE_FILE_HASH=sha256:35311eb0d4d6f0578cab42fd5e51d6150e62821cb3b4ee3a265e2befbeeb5897
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
 ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 
@@ -14,52 +14,33 @@ ARG LIBJPEGTURBO_VERSION=2.0.2
 ARG TOMCAT_UID=101
 ARG TOMCAT_GID=101
 
-## -----------------------------------
-## Cantaloupe WAR building
-## -----------------------------------
-#FROM maven:3.9.6-eclipse-temurin-17-focal as cantaloupe-build
-#
-#ARG TARGETARCH
-#ARG TARGETVARIANT
-#
-#ARG CANTALOUPE_REMOTE
-#ARG CANTALOUPE_BRANCH
-#
-#RUN \
-#  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
-#  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
-#  apt-get update -qqy && apt-get install -qqy --no-install-recommends \
-#  git
-#
-#WORKDIR /build
-#RUN git clone --depth 1 --branch $CANTALOUPE_BRANCH -- $CANTALOUPE_REMOTE cantaloupe
-#
-#WORKDIR cantaloupe
-#ADD --link patches/ patches/
-#RUN \
-#  find patches -name "*.patch" -exec git apply {} +
-#
-#RUN --mount=type=cache,target=/root/.m2 \
-# mvn clean package -DskipTests
+# -----------------------------------
+# Cantaloupe WAR building
+# -----------------------------------
+FROM maven:3.9.6-eclipse-temurin-17-focal as cantaloupe-build
 
-# ------------------------------------
-# Cantaloupe acquisition
-# ------------------------------------
+ARG TARGETARCH
+ARG TARGETVARIANT
 
-FROM $BASE_IMAGE as cantaloupe-acquisition
-
-ARG CANTALOUPE_VERSION
-ARG CANTALOUPE_FILE_HASH
+ARG CANTALOUPE_REMOTE
+ARG CANTALOUPE_BRANCH
 
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
   --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
   apt-get update -qqy && apt-get install -qqy --no-install-recommends \
-  unzip
+  git
 
 WORKDIR /build
-ADD --link --checksum=$CANTALOUPE_FILE_HASH https://github.com/cantaloupe-project/cantaloupe/releases/download/v${CANTALOUPE_VERSION}/cantaloupe-${CANTALOUPE_VERSION}.zip .
-RUN unzip cantaloupe-${CANTALOUPE_VERSION}.zip
+RUN git clone --depth 1 --branch $CANTALOUPE_BRANCH -- $CANTALOUPE_REMOTE cantaloupe
+
+WORKDIR cantaloupe
+ADD --link patches/ patches/
+RUN \
+  find patches -name "*.patch" -exec git apply {} +
+
+RUN --mount=type=cache,target=/root/.m2 \
+ mvn clean package -DskipTests
 
 # ------------------------------------
 # JPEGTurbo building
@@ -185,7 +166,7 @@ WORKDIR /var/log/cantaloupe
 
 # Get and unpack Cantaloupe release archive
 WORKDIR /cantaloupe
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=cantaloupe-acquisition /build/cantaloupe-${CANTALOUPE_VERSION}/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
 COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --chmod=500 <<-'EOS' entrypoint.sh
 #!/bin/bash
 java $JAVA_OPTS -jar cantaloupe.jar

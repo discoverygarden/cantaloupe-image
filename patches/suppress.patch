@@ -1,0 +1,50 @@
+diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
+index ab9252d2a..b165c8542 100644
+--- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
++++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
+@@ -1,16 +1,18 @@
+ package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
+ 
+-import edu.illinois.library.cantaloupe.processor.SourceFormatException;
+-import edu.illinois.library.cantaloupe.util.Stopwatch;
++import java.io.IOException;
++import java.nio.charset.StandardCharsets;
++import java.util.Arrays;
++
++import javax.imageio.stream.ImageInputStream;
++import javax.xml.bind.DatatypeConverter;
++
+ import org.apache.commons.io.IOUtils;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+-import javax.imageio.stream.ImageInputStream;
+-import javax.xml.bind.DatatypeConverter;
+-import java.io.IOException;
+-import java.nio.charset.StandardCharsets;
+-import java.util.Arrays;
++import edu.illinois.library.cantaloupe.processor.SourceFormatException;
++import edu.illinois.library.cantaloupe.util.Stopwatch;
+ 
+ /**
+  * <p>Reads various information from a JPEG2000 box structure. Only used for
+@@ -436,8 +438,17 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
+         byte[] data = new byte[length];
+         int n, offset = 0;
+         while ((n = inputStream.read(
+-                data, offset, data.length - offset)) < offset) {
+-            offset += n;
++                data, offset, data.length - offset)) > -1) {
++           offset += n;
++           if (offset == length) {
++             break;
++           }
++           else if (offset > length) {
++             throw new IndexOutOfBoundsException("Offset larger than length.");
++           }
++        }
++        if (offset < length) {
++          throw new IOException("Failed to read the expected amount of data.");
+         }
+         return data;
+     }
