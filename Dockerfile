@@ -1,43 +1,65 @@
-ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
-ARG CANTALOUPE_BRANCH=release/4.1
-ARG CANTALOUPE_VERSION=4.1.11
+#ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
+#ARG CANTALOUPE_BRANCH=release/4.1
+ARG CANTALOUPE_VERSION=5.0.6
+ARG CANTALOUPE_FILE_HASH=sha256:35311eb0d4d6f0578cab42fd5e51d6150e62821cb3b4ee3a265e2befbeeb5897
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
 ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 
-ARG BASE_IMAGE=tomcat:9.0.87-jdk8-temurin-focal
+# XXX: jdk is required for (at least) our build stages. Final run could possibly
+# swap over to jre, but probably not worth the complexity.
+ARG BASE_IMAGE=eclipse-temurin:11-jdk-focal
 
 ARG LIBJPEGTURBO_VERSION=2.0.2
 
 ARG TOMCAT_UID=101
 ARG TOMCAT_GID=101
 
-# -----------------------------------
-# Cantaloupe WAR building
-# -----------------------------------
-FROM maven:3.9.6-eclipse-temurin-17-focal as cantaloupe-build
+## -----------------------------------
+## Cantaloupe WAR building
+## -----------------------------------
+#FROM maven:3.9.6-eclipse-temurin-17-focal as cantaloupe-build
+#
+#ARG TARGETARCH
+#ARG TARGETVARIANT
+#
+#ARG CANTALOUPE_REMOTE
+#ARG CANTALOUPE_BRANCH
+#
+#RUN \
+#  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
+#  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
+#  apt-get update -qqy && apt-get install -qqy --no-install-recommends \
+#  git
+#
+#WORKDIR /build
+#RUN git clone --depth 1 --branch $CANTALOUPE_BRANCH -- $CANTALOUPE_REMOTE cantaloupe
+#
+#WORKDIR cantaloupe
+#ADD --link patches/ patches/
+#RUN \
+#  find patches -name "*.patch" -exec git apply {} +
+#
+#RUN --mount=type=cache,target=/root/.m2 \
+# mvn clean package -DskipTests
 
-ARG TARGETARCH
-ARG TARGETVARIANT
+# ------------------------------------
+# Cantaloupe acquisition
+# ------------------------------------
 
-ARG CANTALOUPE_REMOTE
-ARG CANTALOUPE_BRANCH
+FROM $BASE_IMAGE as cantaloupe-acquisition
+
+ARG CANTALOUPE_VERSION
+ARG CANTALOUPE_FILE_HASH
 
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
   --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
   apt-get update -qqy && apt-get install -qqy --no-install-recommends \
-  git
+  unzip
 
 WORKDIR /build
-RUN git clone --depth 1 --branch $CANTALOUPE_BRANCH -- $CANTALOUPE_REMOTE cantaloupe
-
-WORKDIR cantaloupe
-ADD --link patches/ patches/
-RUN \
-  find patches -name "*.patch" -exec git apply {} +
-
-RUN --mount=type=cache,target=/root/.m2 \
- mvn clean package -DskipTests
+ADD --link --checksum=$CANTALOUPE_FILE_HASH https://github.com/cantaloupe-project/cantaloupe/releases/download/v${CANTALOUPE_VERSION}/cantaloupe-${CANTALOUPE_VERSION}.zip .
+RUN unzip cantaloupe-${CANTALOUPE_VERSION}.zip
 
 # ------------------------------------
 # JPEGTurbo building
@@ -121,9 +143,6 @@ ENV CANTALOUPE_CONFIGS=$CANTALOUPE_CONFIGS
 ENV CANTALOUPE_PROPERTIES=${CANTALOUPE_CONFIGS}/actual_cantaloupe.properties
 ARG GEM_PATH
 ENV GEM_PATH=$GEM_PATH
-ENV CATALINA_BASE=/usr/local/tomcat
-ENV CATALINA_HOME=/usr/local/tomcat
-ENV CATALINA_PID=/usr/local/tomcat/pid/catalina.pid
 ENV TOMCAT_MEM=1g
 ENV JAVA_OPTS="-Xms${TOMCAT_MEM} -Xmx${TOMCAT_MEM} -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES}"
 ARG TOMCAT_UID
@@ -156,18 +175,21 @@ COPY --link imagemagick_policy.xml /etc/ImageMagick-7/policy.xml
 
 USER tomcat
 
-# Get and unpack Cantaloupe release archive
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=base /usr/local/tomcat/ /usr/local/tomcat/
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.war /usr/local/tomcat/webapps/cantaloupe.war
+# Cantaloupe configs
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=delegate-gem-acquisition ${GEM_PATH}/ ${GEM_PATH}/
+ADD --link --chown=$TOMCAT_UID:$TOMCAT_GID https://github.com/discoverygarden/cantaloupe_configs.git#feature/cantaloupe-5 ${CANTALOUPE_CONFIGS}/
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID actual_cantaloupe.properties info.yaml ${CANTALOUPE_CONFIGS}/
+
 WORKDIR /var/cache/cantaloupe
 WORKDIR /var/log/cantaloupe
 
+# Get and unpack Cantaloupe release archive
+WORKDIR /cantaloupe
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=cantaloupe-acquisition /build/cantaloupe-${CANTALOUPE_VERSION}/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
+COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --chmod=500 <<-'EOS' entrypoint.sh
+#!/bin/bash
+java $JAVA_OPTS -jar cantaloupe.jar
 
-# Cantaloupe configs
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=delegate-gem-acquisition ${GEM_PATH}/ ${GEM_PATH}/
-ADD --link --chown=$TOMCAT_UID:$TOMCAT_GID https://github.com/discoverygarden/cantaloupe_configs.git#main ${CANTALOUPE_CONFIGS}/
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID actual_cantaloupe.properties info.yaml ${CANTALOUPE_CONFIGS}/
+EOS
 
-
-WORKDIR /usr/local/tomcat
-CMD ["catalina.sh", "run"]
+CMD ["./entrypoint.sh"]
