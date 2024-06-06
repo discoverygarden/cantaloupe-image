@@ -1,50 +1,67 @@
-diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
-index ab9252d2a..b165c8542 100644
---- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
-+++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
-@@ -1,16 +1,18 @@
- package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
+diff --git a/src/main/java/edu/illinois/library/cantaloupe/image/exif/Reader.java b/src/main/java/edu/illinois/library/cantaloupe/image/exif/Reader.java
+index bc4261823..1c4ba8037 100644
+--- a/src/main/java/edu/illinois/library/cantaloupe/image/exif/Reader.java
++++ b/src/main/java/edu/illinois/library/cantaloupe/image/exif/Reader.java
+@@ -155,10 +155,7 @@ public final class Reader implements AutoCloseable {
  
--import edu.illinois.library.cantaloupe.processor.SourceFormatException;
--import edu.illinois.library.cantaloupe.util.Stopwatch;
-+import java.io.IOException;
-+import java.nio.charset.StandardCharsets;
-+import java.util.Arrays;
-+
-+import javax.imageio.stream.ImageInputStream;
-+import javax.xml.bind.DatatypeConverter;
-+
- import org.apache.commons.io.IOUtils;
- import org.slf4j.Logger;
- import org.slf4j.LoggerFactory;
- 
--import javax.imageio.stream.ImageInputStream;
--import javax.xml.bind.DatatypeConverter;
--import java.io.IOException;
--import java.nio.charset.StandardCharsets;
--import java.util.Arrays;
-+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
-+import edu.illinois.library.cantaloupe.util.Stopwatch;
- 
- /**
-  * <p>Reads various information from a JPEG2000 box structure. Only used for
-@@ -436,8 +438,17 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
+     private byte[] readBytes(int length) throws IOException {
          byte[] data = new byte[length];
-         int n, offset = 0;
-         while ((n = inputStream.read(
--                data, offset, data.length - offset)) < offset) {
+-        int n, offset = 0;
+-        while ((n = inputStream.read(data, offset, data.length - offset)) < offset) {
 -            offset += n;
-+                data, offset, data.length - offset)) > -1) {
-+           offset += n;
-+           if (offset == length) {
-+             break;
-+           }
-+           else if (offset > length) {
-+             throw new IndexOutOfBoundsException("Offset larger than length.");
-+           }
-+        }
-+        if (offset < length) {
-+          throw new IOException("Failed to read the expected amount of data.");
-         }
+-        }
++        inputStream.readFully(data);
          return data;
      }
+ 
+diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/gif/GIFMetadataReader.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/gif/GIFMetadataReader.java
+index 1978807d2..14887dad3 100644
+--- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/gif/GIFMetadataReader.java
++++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/gif/GIFMetadataReader.java
+@@ -340,11 +340,7 @@ final class GIFMetadataReader implements AutoCloseable {
+ 
+     private byte[] read(int length) throws IOException {
+         byte[] data = new byte[length];
+-        int n, offset = 0;
+-        while ((n = inputStream.read(
+-                data, offset, data.length - offset)) < offset) {
+-            offset += n;
+-        }
++        inputStream.readFully(data);
+         return data;
+     }
+ 
+diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/JPEGMetadataReader.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/JPEGMetadataReader.java
+index b54056c0c..44be18b2d 100644
+--- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/JPEGMetadataReader.java
++++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/JPEGMetadataReader.java
+@@ -296,11 +296,7 @@ public final class JPEGMetadataReader {
+ 
+     private byte[] read(int length) throws IOException {
+         byte[] data = new byte[length];
+-        int n, offset = 0;
+-        while ((n = inputStream.read(
+-                data, offset, data.length - offset)) < offset) {
+-            offset += n;
+-        }
++        inputStream.readFully(data);
+         return data;
+     }
+ 
+diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
+index ab9252d2a..24da4bef5 100644
+--- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
++++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg2000/JPEG2000MetadataReader.java
+@@ -434,11 +434,7 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
+ 
+     private byte[] read(int length) throws IOException {
+         byte[] data = new byte[length];
+-        int n, offset = 0;
+-        while ((n = inputStream.read(
+-                data, offset, data.length - offset)) < offset) {
+-            offset += n;
+-        }
++        inputStream.readFully(data);
+         return data;
+     }
+ 
