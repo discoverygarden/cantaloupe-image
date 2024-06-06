@@ -1,7 +1,8 @@
 ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
 ARG CANTALOUPE_BRANCH=release/5.0
 ARG CANTALOUPE_VERSION=5.0.6
-#ARG CANTALOUPE_FILE_HASH=sha256:35311eb0d4d6f0578cab42fd5e51d6150e62821cb3b4ee3a265e2befbeeb5897
+ARG CANTALOUPE_CONFIGS_REF=main
+ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_REF}
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
 ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 
@@ -120,6 +121,7 @@ ENV LIBJPEGTURBO_VERSION=$LIBJPEGTURBO_VERSION
 ARG CANTALOUPE_VERSION
 ENV CANTALOUPE_VERSION=$CANTALOUPE_VERSION
 ARG CANTALOUPE_CONFIGS
+ARG CANTALOUPE_CONFIGS_REMOTE
 ENV CANTALOUPE_CONFIGS=$CANTALOUPE_CONFIGS
 ENV CANTALOUPE_PROPERTIES=${CANTALOUPE_CONFIGS}/actual_cantaloupe.properties
 ARG GEM_PATH
@@ -158,7 +160,7 @@ USER tomcat
 
 # Cantaloupe configs
 COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=delegate-gem-acquisition ${GEM_PATH}/ ${GEM_PATH}/
-ADD --link --chown=$TOMCAT_UID:$TOMCAT_GID https://github.com/discoverygarden/cantaloupe_configs.git#feature/cantaloupe-5 ${CANTALOUPE_CONFIGS}/
+ADD --link --chown=$TOMCAT_UID:$TOMCAT_GID $CANTALOUPE_CONFIGS_REMOTE ${CANTALOUPE_CONFIGS}/
 COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID actual_cantaloupe.properties info.yaml ${CANTALOUPE_CONFIGS}/
 
 WORKDIR /var/cache/cantaloupe
