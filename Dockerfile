@@ -12,8 +12,8 @@ ARG BASE_IMAGE=eclipse-temurin:11-jdk-focal
 
 ARG LIBJPEGTURBO_VERSION=2.0.2
 
-ARG TOMCAT_UID=101
-ARG TOMCAT_GID=101
+ARG CANTALOUPE_UID=101
+ARG CANTALOUPE_GID=101
 
 # -----------------------------------
 # Cantaloupe WAR building
@@ -126,10 +126,10 @@ ENV CANTALOUPE_CONFIGS=$CANTALOUPE_CONFIGS
 ENV CANTALOUPE_PROPERTIES=${CANTALOUPE_CONFIGS}/actual_cantaloupe.properties
 ARG GEM_PATH
 ENV GEM_PATH=$GEM_PATH
-ENV TOMCAT_MEM=1g
-ENV JAVA_OPTS="-Xms${TOMCAT_MEM} -Xmx${TOMCAT_MEM} -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES}"
-ARG TOMCAT_UID
-ARG TOMCAT_GID
+ENV CANTALOUPE_MEM=1g
+ENV JAVA_OPTS="-Xms${CANTALOUPE_MEM} -Xmx${CANTALOUPE_MEM} -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES}"
+ARG CANTALOUPE_UID
+ARG CANTALOUPE_GID
 
 EXPOSE 8080
 
@@ -150,26 +150,26 @@ WORKDIR /opt/libjpeg-turbo/lib
 RUN ln -s /usr/lib/libturbojpeg.so
 
 # Run non privileged
-RUN addgroup --system tomcat --gid $TOMCAT_GID \
-  && adduser --system tomcat --ingroup tomcat --uid $TOMCAT_UID
+RUN addgroup --system cantaloupe --gid $CANTALOUPE_GID \
+  && adduser --system cantaloupe --ingroup cantaloupe --uid $CANTALOUPE_UID
 
 # Copy ImageMagick policy
 COPY --link imagemagick_policy.xml /etc/ImageMagick-7/policy.xml
 
-USER tomcat
+USER cantaloupe
 
 # Cantaloupe configs
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=delegate-gem-acquisition ${GEM_PATH}/ ${GEM_PATH}/
-ADD --link --chown=$TOMCAT_UID:$TOMCAT_GID $CANTALOUPE_CONFIGS_REMOTE ${CANTALOUPE_CONFIGS}/
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID actual_cantaloupe.properties info.yaml ${CANTALOUPE_CONFIGS}/
+COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --from=delegate-gem-acquisition ${GEM_PATH}/ ${GEM_PATH}/
+ADD --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID $CANTALOUPE_CONFIGS_REMOTE ${CANTALOUPE_CONFIGS}/
+COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID actual_cantaloupe.properties info.yaml ${CANTALOUPE_CONFIGS}/
 
 WORKDIR /var/cache/cantaloupe
 WORKDIR /var/log/cantaloupe
 
 # Get and unpack Cantaloupe release archive
 WORKDIR /cantaloupe
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
-COPY --link --chown=$TOMCAT_UID:$TOMCAT_GID --chmod=500 <<-'EOS' entrypoint.sh
+COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
+COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --chmod=500 <<-'EOS' entrypoint.sh
 #!/bin/bash
 java $JAVA_OPTS -jar cantaloupe.jar
 
