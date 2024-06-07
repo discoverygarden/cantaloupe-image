@@ -172,7 +172,7 @@ WORKDIR /cantaloupe
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --chmod=500 <<-'EOS' entrypoint.sh
 #!/bin/bash
-java $JAVA_OPTS -jar cantaloupe.jar
+exec java $JAVA_OPTS -jar cantaloupe.jar
 
 EOS
 
