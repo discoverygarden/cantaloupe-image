@@ -1,7 +1,8 @@
 ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
 ARG CANTALOUPE_BRANCH=release/5.0
 ARG CANTALOUPE_VERSION=5.0.6
-ARG CANTALOUPE_CONFIGS_REF=main
+#ARG CANTALOUPE_CONFIGS_REF=main
+ARG CANTALOUPE_CONFIGS_REF=update/cantaloupe-5
 ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_REF}
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
 ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
