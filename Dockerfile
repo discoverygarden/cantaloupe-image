@@ -4,7 +4,7 @@ ARG CANTALOUPE_BRANCH=release/5.0
 ARG CANTALOUPE_VERSION=5.0.6
 # renovate: datasource=github-tags depName=discoverygarden/cantaloupe_configs
 ARG CANTALOUPE_CONFIGS_VERSION=v2.0.0
-ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_VERSION}}
+ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_VERSION}
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
 ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 
@@ -13,7 +13,7 @@ ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 ARG BASE_IMAGE=eclipse-temurin:11.0.23_9-jdk-focal
 
 # renovate: datasource=github-releases depName=libjpeg-turbo/libjpeg-turbo
-ARG LIBJPEGTURBO_VERSION=2.0.2
+ARG LIBJPEGTURBO_VERSION=2.1.5.1
 
 ARG CANTALOUPE_UID=101
 ARG CANTALOUPE_GID=101
