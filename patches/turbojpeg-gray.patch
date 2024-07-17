@@ -1,0 +1,56 @@
+From 678b03f1b0577921dbd7f4dcd3ec15f1b2ce1747 Mon Sep 17 00:00:00 2001
+From: Daniel Pierce <dlpierce@indiana.edu>
+Date: Mon, 26 Feb 2024 23:13:41 -0500
+Subject: [PATCH] Use gray subsampling for grayscale images
+
+Fixes error when source image is grayscale jp2
+---
+ .../processor/codec/jpeg/TurboJPEGImageWriter.java  |  5 +++++
+ .../codec/jpeg/TurboJPEGImageWriterTest.java        | 13 ++++++++++++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/TurboJPEGImageWriter.java b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/TurboJPEGImageWriter.java
+index c87fc5f41..dd28fa90a 100644
+--- a/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/TurboJPEGImageWriter.java
++++ b/src/main/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/TurboJPEGImageWriter.java
+@@ -167,6 +167,11 @@ public void write(BufferedImage image,
+         image = Java2DUtil.removeAlpha(image, bgColor);
+         image = Java2DUtil.convertCustomToRGB(image);
+ 
++        // Gray subsampling required to handle grayscale input
++        if (image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
++            setSubsampling(TJ.SAMP_GRAY);
++        }
++
+         try (TJCompressor tjc = new TJCompressor()) {
+             tjc.setSubsamp(subsampling);
+             tjc.setJPEGQuality(quality);
+diff --git a/src/test/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/TurboJPEGImageWriterTest.java b/src/test/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/TurboJPEGImageWriterTest.java
+index 74a752a69..142fb37fc 100644
+--- a/src/test/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/TurboJPEGImageWriterTest.java
++++ b/src/test/java/edu/illinois/library/cantaloupe/processor/codec/jpeg/TurboJPEGImageWriterTest.java
+@@ -164,6 +164,17 @@ public void testWriteWithBufferedImage() throws Exception {
+         }
+     }
+ 
++    @Test
++    public void testWriteWithGrayBufferedImage() throws Exception {
++        BufferedImage image = new BufferedImage(50, 50,
++                BufferedImage.TYPE_BYTE_GRAY);
++
++        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
++            instance.write(image, os);
++            assertDimensions(os, image.getWidth(), image.getHeight());
++        }
++    }
++
+     @Test
+     public void testWriteWithBufferedImageWithBackgroundColor()
+             throws Exception {
+@@ -184,4 +195,4 @@ public void testWriteWithBufferedImageWithBackgroundColor()
+         }
+     }
+ 
+-}
+\ No newline at end of file
++}
