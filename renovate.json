@@ -9,7 +9,7 @@
         "eclipse-temurin"
       ],
       "matchFileNames": [
-        "Dockerfile",
+        "Dockerfile"
       ],
       "allowedVersions": "<12.0.0"
     }
