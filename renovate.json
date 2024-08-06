@@ -2,5 +2,16 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>discoverygarden/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "eclipse-temurin"
+      ],
+      "matchFileNames": [
+        "Dockerfile",
+      ],
+      "allowedVersions": "<12.0.0"
+    }
   ]
 }
