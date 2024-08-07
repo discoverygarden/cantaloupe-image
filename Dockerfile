@@ -13,7 +13,7 @@ ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 ARG BASE_IMAGE=eclipse-temurin:11.0.23_9-jdk-focal
 
 # renovate: datasource=github-releases depName=libjpeg-turbo/libjpeg-turbo
-ARG LIBJPEGTURBO_VERSION=2.1.5.1
+ARG LIBJPEGTURBO_VERSION=3.0.3
 
 ARG CANTALOUPE_UID=101
 ARG CANTALOUPE_GID=101
