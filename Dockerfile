@@ -3,8 +3,7 @@ ARG CANTALOUPE_BRANCH=release/5.0
 # renovate: datasource=github-releases depName=cantaloupe-project/cantaloupe
 ARG CANTALOUPE_VERSION=5.0.6
 # renovate: datasource=github-tags depName=discoverygarden/cantaloupe_configs
-#ARG CANTALOUPE_CONFIGS_VERSION=v2.0.0
-ARG CANTALOUPE_CONFIGS_VERSION=fix/auth-header-usage
+ARG CANTALOUPE_CONFIGS_VERSION=v2.1.0
 ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_VERSION}
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
 ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
@@ -22,7 +21,7 @@ ARG CANTALOUPE_GID=101
 # -----------------------------------
 # Cantaloupe WAR building
 # -----------------------------------
-FROM maven:3.9.9-eclipse-temurin-11-focal as cantaloupe-build
+FROM maven:3.9.9-eclipse-temurin-11-focal AS cantaloupe-build
 
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -50,7 +49,7 @@ RUN --mount=type=cache,target=/root/.m2 \
 # ------------------------------------
 # JPEGTurbo building
 # ------------------------------------
-FROM $BASE_IMAGE as jpegturbo-build
+FROM $BASE_IMAGE AS jpegturbo-build
 
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -87,7 +86,7 @@ RUN cmake \
 # --------------------------------------
 # Cantaloupe delegate gems acquisition.
 # --------------------------------------
-FROM $BASE_IMAGE as delegate-gem-acquisition
+FROM $BASE_IMAGE AS delegate-gem-acquisition
 
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -111,7 +110,7 @@ RUN \
 # Odd situation of wanting to chown a directory that's provided by the base
 # image, without a `RUN chown [...]` invocation.
 # --------------------------------------
-FROM $BASE_IMAGE as base
+FROM $BASE_IMAGE AS base
 
 # --------------------------------------
 # Main image build.
