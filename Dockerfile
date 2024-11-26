@@ -21,7 +21,7 @@ ARG CANTALOUPE_GID=101
 # -----------------------------------
 # Cantaloupe WAR building
 # -----------------------------------
-FROM maven:3.9.9-eclipse-temurin-11-focal as cantaloupe-build
+FROM maven:3.9.9-eclipse-temurin-11-focal AS cantaloupe-build
 
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -49,7 +49,7 @@ RUN --mount=type=cache,target=/root/.m2 \
 # ------------------------------------
 # JPEGTurbo building
 # ------------------------------------
-FROM $BASE_IMAGE as jpegturbo-build
+FROM $BASE_IMAGE AS jpegturbo-build
 
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -86,7 +86,7 @@ RUN cmake \
 # --------------------------------------
 # Cantaloupe delegate gems acquisition.
 # --------------------------------------
-FROM $BASE_IMAGE as delegate-gem-acquisition
+FROM $BASE_IMAGE AS delegate-gem-acquisition
 
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -110,7 +110,7 @@ RUN \
 # Odd situation of wanting to chown a directory that's provided by the base
 # image, without a `RUN chown [...]` invocation.
 # --------------------------------------
-FROM $BASE_IMAGE as base
+FROM $BASE_IMAGE AS base
 
 # --------------------------------------
 # Main image build.
