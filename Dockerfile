@@ -47,41 +47,16 @@ RUN --mount=type=cache,target=/root/.m2 \
  mvn clean package -DskipTests
 
 # ------------------------------------
-# JPEGTurbo building
+# JPEGTurbo acquisition
 # ------------------------------------
-FROM $BASE_IMAGE AS jpegturbo-build
+FROM scratch AS jpegturbo-build
 
 ARG TARGETARCH
-ARG TARGETVARIANT
-
 ARG LIBJPEGTURBO_VERSION
-ENV LIBJPEGTURBO_VERSION=$LIBJPEGTURBO_VERSION
 
 WORKDIR /tmp
 
-# NOTE: can leave out this piece if you don't need the TurboJpegProcessor
-# https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
-RUN \
-  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
-  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
-  apt-get update -qqy && apt-get install -qqy cmake g++ make nasm checkinstall
-
-ADD --link https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${LIBJPEGTURBO_VERSION}/libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz ./
-
-RUN tar -xpf libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz
-
-WORKDIR libjpeg-turbo-${LIBJPEGTURBO_VERSION}
-
-RUN cmake \
-  -DCMAKE_INSTALL_PREFIX=/usr \
-  -DCMAKE_INSTALL_LIBDIR=/usr/lib \
-  -DBUILD_SHARED_LIBS=True \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_FLAGS="$CFLAGS" \
-  -DWITH_JPEG8=1 \
-  -DWITH_JAVA=1 \
-  && make \
-  && checkinstall --default --install=no
+ADD --link https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${LIBJPEGTURBO_VERSION}/libjpeg-turbo-official_${LIBJPEGTURBO_VERSION}_${TARGETARCH}.deb ./
 
 # --------------------------------------
 # Cantaloupe delegate gems acquisition.
@@ -120,7 +95,6 @@ FROM $BASE_IMAGE
 ARG TARGETARCH
 ARG TARGETVARIANT
 ARG LIBJPEGTURBO_VERSION
-ENV LIBJPEGTURBO_VERSION=$LIBJPEGTURBO_VERSION
 ARG CANTALOUPE_VERSION
 ENV CANTALOUPE_VERSION=$CANTALOUPE_VERSION
 ARG CANTALOUPE_CONFIGS
@@ -147,10 +121,7 @@ RUN \
 # https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
 RUN \
   --mount=type=bind,target=/tmp/jpegturbo-build,from=jpegturbo-build \
-  dpkg -i /tmp/jpegturbo-build/tmp/libjpeg-turbo-${LIBJPEGTURBO_VERSION}/libjpeg-turbo_${LIBJPEGTURBO_VERSION}-1_${TARGETARCH}.deb
-
-WORKDIR /opt/libjpeg-turbo/lib
-RUN ln -s /usr/lib/libturbojpeg.so
+  dpkg -i /tmp/jpegturbo-build/tmp/libjpeg-turbo-official_${LIBJPEGTURBO_VERSION}_${TARGETARCH}.deb
 
 # Run non privileged
 RUN addgroup --system cantaloupe --gid $CANTALOUPE_GID \
