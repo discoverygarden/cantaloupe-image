@@ -26,3 +26,6 @@ jobs:
     with:
       image-name: ${{ vars.DOCKER_IMAGE_NAME }}
       tag: ${{ inputs.tag }}
+      # XXX: ubuntu-latest moving to 24.04 seems to have caused some builds to
+      # start segfaulting, in particular: the arm64 build of TurboJPEG.
+      runs-on: ubuntu-22.04
