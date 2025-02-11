@@ -74,7 +74,7 @@ RUN \
 # --------------------------------------
 FROM $BASE_IMAGE AS base
 
-FROM $LIBJPEG_TURBO_IMAGE AS libturbo-jpeg
+FROM $LIBJPEG_TURBO_IMAGE AS libjpeg-turbo
 
 # --------------------------------------
 # Main image build.
@@ -110,7 +110,7 @@ RUN \
 # NOTE: can leave out this piece if you don't need the TurboJpegProcessor
 # https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
 RUN \
-  --mount=type=bind,target=/tmp/jpegturbo-build,from=libturbo-jpeg \
+  --mount=type=bind,target=/tmp/jpegturbo-build,from=libjpeg-turbo \
   dpkg -i /tmp/jpegturbo-build/tmp/libjpeg-turbo_$TARGETARCH-$TARGETVARIANT.deb
 
 WORKDIR /opt/libjpeg-turbo/lib
