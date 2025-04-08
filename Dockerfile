@@ -1,5 +1,4 @@
 ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
-ARG CANTALOUPE_BRANCH=release/5.0
 # renovate: datasource=github-releases depName=cantaloupe-project/cantaloupe
 ARG CANTALOUPE_VERSION=5.0.6
 # renovate: datasource=github-tags depName=discoverygarden/cantaloupe_configs
@@ -27,7 +26,7 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 ARG CANTALOUPE_REMOTE
-ARG CANTALOUPE_BRANCH
+ARG CANTALOUPE_VERSION
 
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
@@ -35,10 +34,9 @@ RUN \
   apt-get update -qqy && apt-get install -qqy --no-install-recommends \
   git
 
-WORKDIR /build
-RUN git clone --depth 1 --branch $CANTALOUPE_BRANCH -- $CANTALOUPE_REMOTE cantaloupe
+ADD --link $CANTALOUPE_REMOTE#v$CANTALOUPE_VERSION /build/cantaloupe
 
-WORKDIR cantaloupe
+WORKDIR /build/cantaloupe
 ADD --link patches/ patches/
 RUN \
   find patches -name "*.patch" -exec git apply {} +
