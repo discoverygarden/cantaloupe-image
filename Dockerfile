@@ -11,8 +11,7 @@ ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 # swap over to jre, but probably not worth the complexity.
 ARG BASE_IMAGE=eclipse-temurin:11.0.26_4-jdk-focal
 
-# renovate: datasource=github-releases depName=libjpeg-turbo/libjpeg-turbo
-ARG LIBJPEGTURBO_VERSION=2.1.5.1
+ARG LIBJPEG_TURBO_IMAGE=231224489621.dkr.ecr.us-east-1.amazonaws.com/libjpeg-turbo:1.0.0
 
 ARG CANTALOUPE_UID=101
 ARG CANTALOUPE_GID=101
@@ -44,43 +43,6 @@ RUN \
 RUN --mount=type=cache,target=/root/.m2 \
  mvn clean package -DskipTests
 
-# ------------------------------------
-# JPEGTurbo building
-# ------------------------------------
-FROM $BASE_IMAGE AS jpegturbo-build
-
-ARG TARGETARCH
-ARG TARGETVARIANT
-
-ARG LIBJPEGTURBO_VERSION
-ENV LIBJPEGTURBO_VERSION=$LIBJPEGTURBO_VERSION
-
-WORKDIR /tmp
-
-# NOTE: can leave out this piece if you don't need the TurboJpegProcessor
-# https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
-RUN \
-  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
-  --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
-  apt-get update -qqy && apt-get install -qqy cmake g++ make nasm checkinstall
-
-ADD --link https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${LIBJPEGTURBO_VERSION}/libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz ./
-
-RUN tar -xpf libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz
-
-WORKDIR libjpeg-turbo-${LIBJPEGTURBO_VERSION}
-
-RUN cmake \
-  -DCMAKE_INSTALL_PREFIX=/usr \
-  -DCMAKE_INSTALL_LIBDIR=/usr/lib \
-  -DBUILD_SHARED_LIBS=True \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_FLAGS="$CFLAGS" \
-  -DWITH_JPEG8=1 \
-  -DWITH_JAVA=1 \
-  && make \
-  && checkinstall --default --install=no
-
 # --------------------------------------
 # Cantaloupe delegate gems acquisition.
 # --------------------------------------
@@ -109,6 +71,8 @@ RUN \
 # image, without a `RUN chown [...]` invocation.
 # --------------------------------------
 FROM $BASE_IMAGE AS base
+
+FROM $LIBJPEG_TURBO_IMAGE AS libjpeg-turbo
 
 # --------------------------------------
 # Main image build.
@@ -144,8 +108,8 @@ RUN \
 # NOTE: can leave out this piece if you don't need the TurboJpegProcessor
 # https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
 RUN \
-  --mount=type=bind,target=/tmp/jpegturbo-build,from=jpegturbo-build \
-  dpkg -i /tmp/jpegturbo-build/tmp/libjpeg-turbo-${LIBJPEGTURBO_VERSION}/libjpeg-turbo_${LIBJPEGTURBO_VERSION}-1_${TARGETARCH}.deb
+  --mount=type=bind,target=/tmp/jpegturbo-build,from=libjpeg-turbo \
+  dpkg -i /tmp/jpegturbo-build/tmp/libjpeg-turbo_$TARGETARCH-$TARGETVARIANT.deb
 
 WORKDIR /opt/libjpeg-turbo/lib
 RUN ln -s /usr/lib/libturbojpeg.so
