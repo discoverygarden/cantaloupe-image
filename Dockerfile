@@ -1,6 +1,6 @@
 ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
 # renovate: datasource=github-releases depName=cantaloupe-project/cantaloupe
-ARG CANTALOUPE_VERSION=5.0.6
+ARG CANTALOUPE_VERSION=5.0.7
 # renovate: datasource=github-tags depName=discoverygarden/cantaloupe_configs
 ARG CANTALOUPE_CONFIGS_VERSION=v2.1.0
 ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_VERSION}
