@@ -172,8 +172,7 @@ WORKDIR /cantaloupe
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --chmod=500 <<-'EOS' entrypoint.sh
 #!/bin/bash
-exec java $JAVA_OPTS -jar cantaloupe.jar
-
+exec java -Xms${CANTALOUPE_MEM} -Xmx${CANTALOUPE_MEM} -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES} -jar cantaloupe.jar
 EOS
 
 CMD ["./entrypoint.sh"]
