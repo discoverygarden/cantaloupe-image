@@ -128,7 +128,6 @@ ENV CANTALOUPE_PROPERTIES=${CANTALOUPE_CONFIGS}/actual_cantaloupe.properties
 ARG GEM_PATH
 ENV GEM_PATH=$GEM_PATH
 ENV CANTALOUPE_MEM=1g
-ENV JAVA_OPTS="-Xms${CANTALOUPE_MEM} -Xmx${CANTALOUPE_MEM} -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES}"
 ARG CANTALOUPE_UID
 ARG CANTALOUPE_GID
 
@@ -167,12 +166,16 @@ COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID actual_cantaloupe.properties
 WORKDIR /var/cache/cantaloupe
 WORKDIR /var/log/cantaloupe
 
+WORKDIR /jmx
+ADD --link --chmod=644 https://github.com/prometheus/jmx_exporter/releases/download/1.4.0/jmx_prometheus_javaagent-1.4.0.jar jmx_prometheus_javaagent.jar
+COPY --chmod=644 jmx.yml ./
+
 # Get and unpack Cantaloupe release archive
 WORKDIR /cantaloupe
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --chmod=500 <<-'EOS' entrypoint.sh
 #!/bin/bash
-exec java $JAVA_OPTS -jar cantaloupe.jar
+exec java -Xms${CANTALOUPE_MEM} -Xmx${CANTALOUPE_MEM} -javaagent:/jmx/jmx_prometheus_javaagent.jar=3001:/jmx/jmx.yml -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES} -jar cantaloupe.jar
 
 EOS
 
