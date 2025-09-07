@@ -127,7 +127,7 @@ ENV CANTALOUPE_CONFIGS=$CANTALOUPE_CONFIGS
 ENV CANTALOUPE_PROPERTIES=${CANTALOUPE_CONFIGS}/actual_cantaloupe.properties
 ARG GEM_PATH
 ENV GEM_PATH=$GEM_PATH
-ENV CANTALOUPE_MEM=1g
+ENV JAVA_MEMORY="-Xms1g -Xmx1g"
 ARG CANTALOUPE_UID
 ARG CANTALOUPE_GID
 
@@ -175,7 +175,7 @@ WORKDIR /cantaloupe
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --chmod=500 <<-'EOS' entrypoint.sh
 #!/bin/bash
-exec java -Xms${CANTALOUPE_MEM} -Xmx${CANTALOUPE_MEM} -javaagent:/jmx/jmx_prometheus_javaagent.jar=3001:/jmx/jmx.yml -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES} -jar cantaloupe.jar
+exec java $JAVA_MEMORY -javaagent:/jmx/jmx_prometheus_javaagent.jar=3001:/jmx/jmx.yml -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES} -jar cantaloupe.jar
 
 EOS
 
