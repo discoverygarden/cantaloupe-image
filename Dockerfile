@@ -166,8 +166,10 @@ COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID actual_cantaloupe.properties
 WORKDIR /var/cache/cantaloupe
 WORKDIR /var/log/cantaloupe
 
+# renovate: datasource=github-releases depName=prometheus/jmx_exporter
+ARG JMX_EXRPORTER_VERSION=1.4.0
 WORKDIR /jmx
-ADD --link --chmod=644 https://github.com/prometheus/jmx_exporter/releases/download/1.4.0/jmx_prometheus_javaagent-1.4.0.jar jmx_prometheus_javaagent.jar
+ADD --link --chmod=644 https://github.com/prometheus/jmx_exporter/releases/download/$JMX_EXRPORTER_VERSION/jmx_prometheus_javaagent-$JMX_EXRPORTER_VERSION.jar jmx_prometheus_javaagent.jar
 COPY --chmod=644 jmx.yml ./
 
 # Get and unpack Cantaloupe release archive
