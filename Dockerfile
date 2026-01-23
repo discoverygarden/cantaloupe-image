@@ -20,7 +20,7 @@ ARG CANTALOUPE_GID=101
 # -----------------------------------
 # Cantaloupe WAR building
 # -----------------------------------
-FROM maven:3.9.9-eclipse-temurin-11-focal AS cantaloupe-build
+FROM maven:3.9.12-eclipse-temurin-17-noble AS cantaloupe-build
 
 ARG TARGETARCH
 ARG TARGETVARIANT
