@@ -2,7 +2,7 @@ ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
 # renovate: datasource=github-releases depName=cantaloupe-project/cantaloupe
 ARG CANTALOUPE_VERSION=5.0.6
 # renovate: datasource=github-tags depName=discoverygarden/cantaloupe_configs
-ARG CANTALOUPE_CONFIGS_VERSION=v2.1.1
+ARG CANTALOUPE_CONFIGS_VERSION=feature/wider-template
 ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_VERSION}
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
 ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
