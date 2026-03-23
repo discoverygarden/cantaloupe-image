@@ -1,0 +1,57 @@
+From 0e1364db31c064529d76e690f6e55f64d73e8138 Mon Sep 17 00:00:00 2001
+From: Scott Aubrey <scott@aubrey.org.uk>
+Date: Thu, 2 Mar 2023 14:04:03 +0000
+Subject: [PATCH 1/2] add WebIdentityTokenFileCredentialsProvider to
+ AwsCredentialsProviderChain
+
+---
+ .../edu/illinois/library/cantaloupe/util/S3ClientBuilder.java   | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/main/java/edu/illinois/library/cantaloupe/util/S3ClientBuilder.java b/src/main/java/edu/illinois/library/cantaloupe/util/S3ClientBuilder.java
+index 6a8c32f4a..dbe8654e3 100644
+--- a/src/main/java/edu/illinois/library/cantaloupe/util/S3ClientBuilder.java
++++ b/src/main/java/edu/illinois/library/cantaloupe/util/S3ClientBuilder.java
+@@ -9,6 +9,7 @@
+ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+ import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
++import software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider;
+ import software.amazon.awssdk.core.exception.SdkClientException;
+ import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+ import software.amazon.awssdk.regions.Region;
+@@ -72,6 +73,7 @@ public String secretAccessKey() {
+                 }
+             }));
+         }
++        builder.addCredentialsProvider(WebIdentityTokenFileCredentialsProvider.builder().build());
+         builder.addCredentialsProvider(ProfileCredentialsProvider.create());
+         builder.addCredentialsProvider(ContainerCredentialsProvider.builder().build());
+         builder.addCredentialsProvider(InstanceProfileCredentialsProvider.builder().build());
+
+From fc5c35b5c772107c7cb54b4306f0286d0c40bc98 Mon Sep 17 00:00:00 2001
+From: Scott Aubrey <scott@aubrey.org.uk>
+Date: Fri, 3 Mar 2023 15:16:09 +0000
+Subject: [PATCH 2/2] Add sts dependancy
+
+---
+ pom.xml | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/pom.xml b/pom.xml
+index c72227efa..9c08eaad5 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -383,6 +383,11 @@
+             <artifactId>s3</artifactId>
+             <version>${aws-sdk.version}</version>
+         </dependency>
++        <dependency>
++            <groupId>software.amazon.awssdk</groupId>
++            <artifactId>sts</artifactId>
++            <version>${aws-sdk.version}</version>
++        </dependency>
+         <!--
+         <dependency>
+             <groupId>software.amazon.awssdk</groupId>
+
