@@ -182,7 +182,13 @@ WORKDIR /cantaloupe
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --chmod=500 <<-'EOS' entrypoint.sh
 #!/bin/bash
-exec java $JAVA_MEMORY -javaagent:/jmx/jmx_prometheus_javaagent.jar=3001:/jmx/jmx.yml -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES} -jar cantaloupe.jar
+exec java $JAVA_MEMORY \
+  -javaagent:/jmx/jmx_prometheus_javaagent.jar=3001:/jmx/jmx.yml \
+  -server \
+  -Djava.awt.headless=true \
+  -Dcantaloupe.config=${CANTALOUPE_PROPERTIES} \
+  -Dsoftware.amazon.awssdk.http.service.impl=software.amazon.awssdk.http.urlconnection.UrlConnectionSdkHttpService \
+  -jar cantaloupe.jar
 
 EOS
 
