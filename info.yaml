@@ -1,4 +1,6 @@
 ---
 fallback: http://localhost/islandora/object/%{pid}/datastream/%{dsid}/view?token=%{token}
+modern_fallback: ~
 sitemap:
     drupal_d8_default: 'http://drupal%{suffix}'
+sites_cache_size: 10
