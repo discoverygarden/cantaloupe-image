@@ -2,7 +2,7 @@ ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
 # renovate: datasource=github-releases depName=cantaloupe-project/cantaloupe
 ARG CANTALOUPE_VERSION=5.0.6
 # renovate: datasource=github-tags depName=discoverygarden/cantaloupe_configs
-#ARG CANTALOUPE_CONFIGS_VERSION=v2.1.1
+#ARG CANTALOUPE_CONFIGS_VERSION=v2.2.0
 ARG CANTALOUPE_CONFIGS_VERSION=feature/redirect-header-control
 ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_VERSION}
 ARG CANTALOUPE_CONFIGS=/opt/cantaloupe_configs
@@ -183,7 +183,13 @@ WORKDIR /cantaloupe
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --from=cantaloupe-build /build/cantaloupe/target/cantaloupe-${CANTALOUPE_VERSION}.jar cantaloupe.jar
 COPY --link --chown=$CANTALOUPE_UID:$CANTALOUPE_GID --chmod=500 <<-'EOS' entrypoint.sh
 #!/bin/bash
-exec java $JAVA_MEMORY -javaagent:/jmx/jmx_prometheus_javaagent.jar=3001:/jmx/jmx.yml -server -Djava.awt.headless=true -Dcantaloupe.config=${CANTALOUPE_PROPERTIES} -jar cantaloupe.jar
+exec java $JAVA_MEMORY \
+  -javaagent:/jmx/jmx_prometheus_javaagent.jar=3001:/jmx/jmx.yml \
+  -server \
+  -Djava.awt.headless=true \
+  -Dcantaloupe.config=${CANTALOUPE_PROPERTIES} \
+  -Dsoftware.amazon.awssdk.http.service.impl=software.amazon.awssdk.http.urlconnection.UrlConnectionSdkHttpService \
+  -jar cantaloupe.jar
 
 EOS
 
