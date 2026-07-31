@@ -167,7 +167,7 @@ WORKDIR /var/cache/cantaloupe
 WORKDIR /var/log/cantaloupe
 
 # renovate: datasource=github-release-attachments depName=prometheus/jmx_exporter
-ARG JMX_EXPORTER_VERSION=1.4.0
+ARG JMX_EXPORTER_VERSION=1.6.0
 ARG JMX_EXPORTER_DIGEST=sha256:db1492e95a7ee95cd5e0a969875c0d4f0ef6413148d750351a41cc71d775f59a
 WORKDIR /jmx
 ADD \
