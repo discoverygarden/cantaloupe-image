@@ -55,7 +55,8 @@ ARG TARGETVARIANT
 ARG LIBJPEGTURBO_VERSION
 ENV LIBJPEGTURBO_VERSION=$LIBJPEGTURBO_VERSION
 
-WORKDIR /tmp
+# XXX: build outside /tmp; checkinstall on noble fails to copy files out of a /tmp build dir.
+WORKDIR /build
 
 # NOTE: can leave out this piece if you don't need the TurboJpegProcessor
 # https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
@@ -144,7 +145,7 @@ RUN \
 # https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
 RUN \
   --mount=type=bind,target=/tmp/jpegturbo-build,from=jpegturbo-build \
-  dpkg -i /tmp/jpegturbo-build/tmp/libjpeg-turbo-${LIBJPEGTURBO_VERSION}/libjpeg-turbo_${LIBJPEGTURBO_VERSION}-1_${TARGETARCH}.deb
+  dpkg -i /tmp/jpegturbo-build/build/libjpeg-turbo-${LIBJPEGTURBO_VERSION}/libjpeg-turbo_${LIBJPEGTURBO_VERSION}-1_${TARGETARCH}.deb
 
 WORKDIR /opt/libjpeg-turbo/lib
 RUN ln -s /usr/lib/libturbojpeg.so
