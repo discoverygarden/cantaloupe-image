@@ -9,7 +9,7 @@ ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 
 # XXX: jdk is required for (at least) our build stages. Final run could possibly
 # swap over to jre, but probably not worth the complexity.
-ARG BASE_IMAGE=eclipse-temurin:17.0.21.1_2-jdk-noble
+ARG BASE_IMAGE=eclipse-temurin:17-jdk-noble
 
 # renovate: datasource=github-releases depName=libjpeg-turbo/libjpeg-turbo
 ARG LIBJPEGTURBO_VERSION=2.1.5.1
