@@ -55,8 +55,7 @@ ARG TARGETVARIANT
 ARG LIBJPEGTURBO_VERSION
 ENV LIBJPEGTURBO_VERSION=$LIBJPEGTURBO_VERSION
 
-# XXX: build outside /tmp; checkinstall on noble fails to copy files out of a /tmp build dir.
-WORKDIR /build
+WORKDIR /tmp
 
 # NOTE: can leave out this piece if you don't need the TurboJpegProcessor
 # https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
@@ -80,7 +79,22 @@ RUN cmake \
   -DWITH_JPEG8=1 \
   -DWITH_JAVA=1 \
   && make \
-  && checkinstall --default --install=no
+  && make install DESTDIR=/tmp/jpegturbo-pkg
+
+# XXX: checkinstall no longer works on Ubuntu noble ("file INSTALL cannot copy
+# file"), so package the staged install as a .deb directly. Same output
+# filename as before, so the final stage is unchanged.
+RUN set -eux; \
+  mkdir -p /tmp/jpegturbo-pkg/DEBIAN; \
+  printf '%s\n' \
+    "Package: libjpeg-turbo" \
+    "Version: ${LIBJPEGTURBO_VERSION}-1" \
+    "Architecture: ${TARGETARCH}" \
+    "Maintainer: discoverygarden <noreply@discoverygarden.ca>" \
+    "Depends: libc6" \
+    "Description: libjpeg-turbo ${LIBJPEGTURBO_VERSION} (with TurboJPEG Java bindings)" \
+    > /tmp/jpegturbo-pkg/DEBIAN/control; \
+  dpkg-deb --build /tmp/jpegturbo-pkg "libjpeg-turbo_${LIBJPEGTURBO_VERSION}-1_${TARGETARCH}.deb"
 
 # --------------------------------------
 # Cantaloupe delegate gems acquisition.
@@ -145,7 +159,7 @@ RUN \
 # https://cantaloupe-project.github.io/manual/5.0/processors.html#TurboJpegProcessor
 RUN \
   --mount=type=bind,target=/tmp/jpegturbo-build,from=jpegturbo-build \
-  dpkg -i /tmp/jpegturbo-build/build/libjpeg-turbo-${LIBJPEGTURBO_VERSION}/libjpeg-turbo_${LIBJPEGTURBO_VERSION}-1_${TARGETARCH}.deb
+  dpkg -i /tmp/jpegturbo-build/tmp/libjpeg-turbo-${LIBJPEGTURBO_VERSION}/libjpeg-turbo_${LIBJPEGTURBO_VERSION}-1_${TARGETARCH}.deb
 
 WORKDIR /opt/libjpeg-turbo/lib
 RUN ln -s /usr/lib/libturbojpeg.so
