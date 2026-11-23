@@ -1,6 +1,6 @@
 ARG CANTALOUPE_REMOTE=https://github.com/cantaloupe-project/cantaloupe.git
 # renovate: datasource=github-releases depName=cantaloupe-project/cantaloupe
-ARG CANTALOUPE_VERSION=5.0.6
+ARG CANTALOUPE_VERSION=5.0.7
 # renovate: datasource=github-tags depName=discoverygarden/cantaloupe_configs
 ARG CANTALOUPE_CONFIGS_VERSION=v2.3.0
 ARG CANTALOUPE_CONFIGS_REMOTE=https://github.com/discoverygarden/cantaloupe_configs.git#${CANTALOUPE_CONFIGS_VERSION}
@@ -9,7 +9,7 @@ ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 
 # XXX: jdk is required for (at least) our build stages. Final run could possibly
 # swap over to jre, but probably not worth the complexity.
-ARG BASE_IMAGE=eclipse-temurin:11.0.27_6-jdk-focal
+ARG BASE_IMAGE=eclipse-temurin:17.0.17_10-jdk-noble
 
 # renovate: datasource=github-releases depName=libjpeg-turbo/libjpeg-turbo
 ARG LIBJPEGTURBO_VERSION=2.1.5.1
@@ -20,7 +20,7 @@ ARG CANTALOUPE_GID=101
 # -----------------------------------
 # Cantaloupe WAR building
 # -----------------------------------
-FROM maven:3.9.9-eclipse-temurin-11-focal AS cantaloupe-build
+FROM maven:3.9.12-eclipse-temurin-17-noble AS cantaloupe-build
 
 ARG TARGETARCH
 ARG TARGETVARIANT
