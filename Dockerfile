@@ -62,7 +62,7 @@ WORKDIR /tmp
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
   --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
-  apt-get update -qqy && apt-get install -qqy cmake g++ make nasm checkinstall
+  apt-get update -qqy && apt-get install -qqy cmake g++ make nasm
 
 ADD --link https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${LIBJPEGTURBO_VERSION}/libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz ./
 
