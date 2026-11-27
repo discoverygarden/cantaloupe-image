@@ -7,7 +7,7 @@ permissions:
   packages: write
 on:
   schedule:
-    - cron: '47 4 1 * *'
+    - cron: '47 4 * * 1'
   workflow_dispatch:
     inputs:
       env:
@@ -29,3 +29,17 @@ jobs:
       # XXX: ubuntu-latest moving to 24.04 seems to have caused some builds to
       # start segfaulting, in particular: the arm64 build of TurboJPEG.
       runs-on: ubuntu-22.04
+
+  # GitHub disables scheduled workflows in public repos after 60 days without
+  # repository activity (state: disabled_inactivity). Re-enabling the workflow
+  # via the API from within a scheduled run resets that timer.
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Reset the scheduled-workflow inactivity timer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "/repos/${{ github.repository }}/actions/workflows/rebuild-image.yml/enable"
