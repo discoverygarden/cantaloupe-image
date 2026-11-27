@@ -9,7 +9,7 @@ ARG GEM_PATH=${CANTALOUPE_CONFIGS}/gems
 
 # XXX: jdk is required for (at least) our build stages. Final run could possibly
 # swap over to jre, but probably not worth the complexity.
-ARG BASE_IMAGE=eclipse-temurin:11.0.27_6-jdk-focal
+ARG BASE_IMAGE=eclipse-temurin:17-jdk-noble
 
 # renovate: datasource=github-releases depName=libjpeg-turbo/libjpeg-turbo
 ARG LIBJPEGTURBO_VERSION=2.1.5.1
@@ -20,7 +20,7 @@ ARG CANTALOUPE_GID=101
 # -----------------------------------
 # Cantaloupe WAR building
 # -----------------------------------
-FROM maven:3.9.9-eclipse-temurin-11-focal AS cantaloupe-build
+FROM maven:3.9.16-eclipse-temurin-17-noble AS cantaloupe-build
 
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -62,7 +62,7 @@ WORKDIR /tmp
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists,sharing=locked,id=debian-apt-lists-$TARGETARCH$TARGETVARIANT \
   --mount=type=cache,target=/var/cache/apt/archives,sharing=locked,id=debian-apt-archives-$TARGETARCH$TARGETVARIANT \
-  apt-get update -qqy && apt-get install -qqy cmake g++ make nasm checkinstall
+  apt-get update -qqy && apt-get install -qqy cmake g++ make nasm
 
 ADD --link https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${LIBJPEGTURBO_VERSION}/libjpeg-turbo-${LIBJPEGTURBO_VERSION}.tar.gz ./
 
@@ -79,7 +79,22 @@ RUN cmake \
   -DWITH_JPEG8=1 \
   -DWITH_JAVA=1 \
   && make \
-  && checkinstall --default --install=no
+  && make install DESTDIR=/tmp/jpegturbo-pkg
+
+# XXX: checkinstall no longer works on Ubuntu noble ("file INSTALL cannot copy
+# file"), so package the staged install as a .deb directly. Same output
+# filename as before, so the final stage is unchanged.
+RUN set -eux; \
+  mkdir -p /tmp/jpegturbo-pkg/DEBIAN; \
+  printf '%s\n' \
+    "Package: libjpeg-turbo" \
+    "Version: ${LIBJPEGTURBO_VERSION}-1" \
+    "Architecture: ${TARGETARCH}" \
+    "Maintainer: discoverygarden <noreply@discoverygarden.ca>" \
+    "Depends: libc6" \
+    "Description: libjpeg-turbo ${LIBJPEGTURBO_VERSION} (with TurboJPEG Java bindings)" \
+    > /tmp/jpegturbo-pkg/DEBIAN/control; \
+  dpkg-deb --build /tmp/jpegturbo-pkg "libjpeg-turbo_${LIBJPEGTURBO_VERSION}-1_${TARGETARCH}.deb"
 
 # --------------------------------------
 # Cantaloupe delegate gems acquisition.
